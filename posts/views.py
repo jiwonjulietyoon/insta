@@ -7,7 +7,7 @@ from django.views.decorators.http import require_http_methods
 def create(request):
     if request.method == "POST":
         # 작성된 포스트(게시글)를 DB에 적용
-        form = PostForm(request.POST)
+        form = PostForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             return redirect('posts:list')
