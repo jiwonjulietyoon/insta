@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .forms import PostForm
 from .models import Post
 from django.views.decorators.http import require_http_methods
@@ -32,7 +32,8 @@ def delete(request, id):
     return redirect('posts:list')
 
 def update(request, id):
-    post = Post.objects.get(pk=id)
+    # post = Post.objects.get(pk=id)
+    post = get_object_or_404(Post, pk=id)
     if request.method == "GET":
         form = PostForm(instance=post)
         return render(request, 'posts/update.html', {
