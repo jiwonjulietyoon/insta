@@ -28,6 +28,8 @@ def list(request):
 #@require_POST   # POST method만 accept하고 싶을 때 => if request.method == "POST": 를 쓰는 것과 동일
 def delete(request, id):
     post = Post.objects.get(pk=id)
+    if post.user != request.user:
+        return redirect('posts:list')
     post.delete()
     return redirect('posts:list')
 

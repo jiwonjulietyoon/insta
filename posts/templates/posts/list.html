@@ -5,12 +5,22 @@
   <div class="row justify-content-center">
     {% for post in posts %}
       <div class="card" style="width: 40rem;">
-        <img src="{{ post.image.url }}" class="card-img-top" alt="...">
+        <div class="card-title">
+          <span>{{ post.user }}</span>
+        </div>
+        {% if post.image %}
+          <img src="{{ post.image.url }}" class="card-img-top" alt="...">
+        {% else %}
+          <img src="https://picsum.photos/300/300/?random" class="card-img-top" alt="...">
+        {% endif %}
         <div class="card-body">
           <p class="card-text">{{ post.content }}</p>
           
-          <a href="{% url 'posts:delete' post.id %}" class="btn btn-danger">Delete</a>
-          <a href="{% url 'posts:update' post.id %}" class="btn btn-warning">Edit</a>
+          <!-- 작성자만 수정/삭제 가능하도록 만듦 -->
+          {% if post.user == request.user %}
+            <a href="{% url 'posts:delete' post.id %}" class="btn btn-danger">Delete</a>
+            <a href="{% url 'posts:update' post.id %}" class="btn btn-warning">Edit</a>
+          {% endif %}
         </div>
       </div>
     {% endfor %}
