@@ -1,5 +1,5 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth import login as auth_login, logout as auth_logout, authenticate
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login as auth_login, logout as auth_logout, authenticate, get_user_model
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from .forms import LoginForm
 
@@ -56,7 +56,7 @@ def signup(request):
         if form.is_valid():
             user = form.save()
             auth_login(request, user)
-            redirect('posts:lists')
+            return redirect('posts:list')
         else:
             return redirect('accounts:signup')
     else: # GET - 유저 정보 입력 받음
@@ -64,4 +64,21 @@ def signup(request):
     return render(request, 'accounts/signup.html', {
         'form': form,
     })
+    
+
+def people(request, username):
+    # 사용자에 대한 정보
+    people = get_object_or_404(get_user_model(), username=username)
+    # 유저 객체 표현 방법:
+    # 1. settings.AUTH_USER_Model  (from django.conf)
+    # 2. get_user_model()  ###
+    
+    return render(request, 'accounts/people.html' ,{
+        'people': people,
+    })
+    
+    
+    
+    
+    
     
