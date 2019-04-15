@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ['insta-whitejcme.c9users.io']
 # Application definition
 
 INSTALLED_APPS = [
+    'django_extensions',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
