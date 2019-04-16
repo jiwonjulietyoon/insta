@@ -1,10 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import PostForm
-from .models import Post
-from django.views.decorators.http import require_http_methods
+from .forms import PostForm, CommentForm
+from .models import Post, Comment
+from django.views.decorators.http import require_http_methods, require_POST
 from django.contrib.auth.decorators import login_required
 
 # Create your views here.
+def index(request):
+    return redirect('posts:list')
+
 def create(request):
     if request.method == "POST":
         # 작성된 포스트(게시글)를 DB에 적용
@@ -22,11 +25,32 @@ def create(request):
         })
 
 def list(request):
-    # 모든 포스트를 보여준다
-    posts = Post.objects.all()
-    return render(request, 'posts/list.html', {
-        'posts': posts,
-    })
+    if request.method == "GET":
+        # 모든 포스트를 보여준다
+        posts = Post.objects.all()
+        comment_form = CommentForm()
+        return render(request, 'posts/list.html', {
+            'posts': posts,
+            'comment_form': comment_form,
+        })
+
+@login_required
+@require_POST
+def create_comment(request, post_id):
+    comment_form = CommentForm(request.POST)
+    post = get_object_or_404(Post, pk=post_id)
+    if comment_form.is_valid():
+        comment = comment_form.save(commit=False)
+        comment.post = post
+        comment.user = request.user
+        comment.save()
+        return redirect('posts:list')
+
+def delete_comment(request, post_id, comment_id):
+    comment = Comment.objects.get(pk=comment_id)
+    comment.delete()
+    return redirect('posts:list')
+
     
 #@require_POST   # POST method만 accept하고 싶을 때 => if request.method == "POST": 를 쓰는 것과 동일
 def delete(request, id):
@@ -63,3 +87,4 @@ def like(request, id):
         post.like_users.add(request.user)
     
     return redirect('posts:list')
+

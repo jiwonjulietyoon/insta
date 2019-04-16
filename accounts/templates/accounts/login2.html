@@ -4,6 +4,14 @@
 
 {% block body %}
 <h1>Login</h1>
+
+{% comment %}
+<!-- <form method="POST" action="{% url 'accounts:login' next=request.GET.get('next') %}"> -->
+<!-- 위처럼 action을 넣게 되면 next action이 잘 넘어가지 않게 된다. 따라서 next를 명시적으로 지정해주어야 한다. -->
+<!-- 그러나 Django convention으로는 이 경우에 아예 action을 쓰지 않는 게 더 좋다. (동일 action으로 GET/POST 구분하는 상황에서) -->
+{% endcomment %}
+
+
 <form method="POST">
   {% csrf_token %}
   {% bootstrap_form form %}
