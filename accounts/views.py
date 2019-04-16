@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login as auth_login, logout as auth_logout, authenticate, get_user_model
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from .forms import LoginForm
+from django.contrib.auth import login as auth_login, logout as auth_logout, authenticate, get_user_model, update_session_auth_hash
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, UserChangeForm, PasswordChangeForm
+from .forms import LoginForm, CustomUserChangeForm
 
 # Create your views here.
 def login(request):
@@ -78,7 +78,46 @@ def people(request, username):
     })
     
     
+# 회원 정보 변경 (편집 & 반영)
+def update(request):
+    if request.method == "POST":  # 반영
+        user_change_form = CustomUserChangeForm(request.POST, instance=request.user)
+        if user_change_form.is_valid():
+            user = user_change_form.save()
+            return redirect('people', user.username)
+    else: # "GET"  # 편집
+        user_change_form = CustomUserChangeForm(instance=request.user)
+        password_change_form = PasswordChangeForm(request.user)
+        return render(request, 'accounts/update.html', {
+            'user_change_form': user_change_form,
+        })
     
-    
-    
-    
+
+# 회원 탈퇴
+def delete(request):
+    if request.method == "POST":  # 탈퇴 로직
+        request.user.delete()
+        return redirect('posts:list')
+        # return redirect('accounts:signup')
+    return render(request, 'accounts/delete.html')
+
+# 비밀번호 변경
+def password(request):
+    if request.method == "POST":
+        password_change_form = PasswordChangeForm(request.user, request.POST)
+        if password_change_form.is_valid():
+            user = password_change_form.save()
+            update_session_auth_hash(request, user)
+            return redirect('people', request.user.username)
+    else: #"GET"
+        password_change_form = PasswordChangeForm(request.user)
+        return render(request, 'accounts/password.html', {
+            'password_change_form': password_change_form,
+        })
+
+
+
+
+
+
+
