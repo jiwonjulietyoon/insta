@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login as auth_login, logout as auth_logout, authenticate, get_user_model, update_session_auth_hash
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, UserChangeForm, PasswordChangeForm
-from .forms import LoginForm, CustomUserChangeForm
+from .forms import LoginForm, CustomUserChangeForm, ProfileForm
+from .models import Profile
 
 # Create your views here.
 def login(request):
@@ -55,6 +56,7 @@ def signup(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
+            Profile.objects.create(user=user)
             auth_login(request, user)
             return redirect('posts:list')
         else:
@@ -82,14 +84,30 @@ def people(request, username):
 def update(request):
     if request.method == "POST":  # 반영
         user_change_form = CustomUserChangeForm(request.POST, instance=request.user)
-        if user_change_form.is_valid():
+        profile_form = ProfileForm(request.POST, instance=request.user.profile)
+        if user_change_form.is_valid() and profile_form.is_valid():
             user = user_change_form.save()
+            profile_form.save()
             return redirect('people', user.username)
     else: # "GET"  # 편집
         user_change_form = CustomUserChangeForm(instance=request.user)
-        password_change_form = PasswordChangeForm(request.user)
+        
+        ##### ISSUE:  instance 를 넣어줄 정보가 있는 유저가 있고, 없는 유저도 있다.
+        ### Solution 1
+        # if Profile.objects.get(user=request.user):
+        #     profile = Profile.objects.get(user=request.user)
+        # else:
+        #     profile = Profile.objects.create(user=request.user)
+            
+        ### Solution 2    
+        profile, created = Profile.objects.get_or_create(user=request.user) 
+              # get_or_create : Returns a tuple of (object, created), where object is the retrieved or created object and created is a boolean specifying whether a new object was created.
+        profile_form = ProfileForm(instance=profile)
+        
+        
         return render(request, 'accounts/update.html', {
             'user_change_form': user_change_form,
+            'profile_form': profile_form,
         })
     
 
