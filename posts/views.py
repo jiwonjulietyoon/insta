@@ -26,6 +26,8 @@ def create(request):
             'form': form
         })
 
+
+@login_required
 def list(request):
     ##### 모든 포스트를 보여준다
     # posts = Post.objects.all()
