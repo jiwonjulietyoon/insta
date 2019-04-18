@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login as auth_login, logout as auth_logout, authenticate, get_user_model, update_session_auth_hash
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, UserChangeForm, PasswordChangeForm
-from .forms import LoginForm, CustomUserChangeForm, ProfileForm
-from .models import Profile
+from .forms import LoginForm, CustomUserChangeForm, ProfileForm, CustomUserCreationForm
+from .models import Profile, User
 
 # Create your views here.
 def login(request):
@@ -53,7 +53,7 @@ def logout(request):
 
 def signup(request):
     if request.method == "POST": # POST - 유저 등록
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             Profile.objects.create(user=user)
@@ -62,7 +62,7 @@ def signup(request):
         else:
             return redirect('accounts:signup')
     else: # GET - 유저 정보 입력 받음
-        form = UserCreationForm()
+        form = CustomUserCreationForm()
     return render(request, 'accounts/signup.html', {
         'form': form,
     })
@@ -133,7 +133,18 @@ def password(request):
             'password_change_form': password_change_form,
         })
 
-
+def follow(request, user_id):
+    person = get_object_or_404(get_user_model(), pk=user_id)
+    
+    # 만약 현재 유저가 해당 유저를 이미 팔로우하고 있었으면, 언팔로우 (remove)
+    if request.user in person.followers.all():
+        person.followers.remove(request.user)
+    
+    # 반대로, 팔로우를 안 하고 있었다면 팔로우 한다.   (add)
+    else:
+        person.followers.add(request.user)
+    
+    return redirect('people', person.username)
 
 
 

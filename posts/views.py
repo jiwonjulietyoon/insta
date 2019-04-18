@@ -3,11 +3,13 @@ from .forms import PostForm, CommentForm
 from .models import Post, Comment
 from django.views.decorators.http import require_http_methods, require_POST
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 
 # Create your views here.
 def index(request):
     return redirect('posts:list')
 
+@login_required
 def create(request):
     if request.method == "POST":
         # 작성된 포스트(게시글)를 DB에 적용
@@ -25,14 +27,27 @@ def create(request):
         })
 
 def list(request):
-    if request.method == "GET":
-        # 모든 포스트를 보여준다
-        posts = Post.objects.all()
-        comment_form = CommentForm()
-        return render(request, 'posts/list.html', {
-            'posts': posts,
-            'comment_form': comment_form,
-        })
+    ##### 모든 포스트를 보여준다
+    # posts = Post.objects.all()
+    
+    ##### 내가 팔로우한 사람들의 포스트 + 내가 작성한 포스트만 보여줌
+    if request.user.is_authenticated:
+        posts = Post.objects.filter(Q(user_id__in=request.user.followings.all()) | Q(user=request.user)).order_by('-id')
+        
+        # my_filter = Q(user=request.user)
+        # for user in request.user.followers.all():
+        #     my_filter = my_filter | Q(user=user)
+        # posts = Post.objects.filter(my_filter).order_by('-id')
+    
+    else:
+        posts = None
+    
+    
+    comment_form = CommentForm()
+    return render(request, 'posts/list.html', {
+        'posts': posts,
+        'comment_form': comment_form,
+    })
 
 @login_required
 @require_POST

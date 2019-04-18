@@ -3,13 +3,17 @@
 
 {% block body %}
   <div class="row justify-content-center my-5">
-    <a href="{% url 'posts:create' %}"><button class="btn btn-info">Create New</button></a>
+    {% if user.is_authenticated %}
+      <a href="{% url 'posts:create' %}"><button class="btn btn-info">Create New</button></a>
+    {% else %}
+      <a href="{% url 'accounts:login' %}"><button class="btn btn-info">Login to create new post</button></a>
+    {% endif %}
   </div>
   <div class="row justify-content-center">
     {% for post in posts %}
       <div class="card" style="width: 25rem;">
-        <div class="card-title">
-          <span>{{ post.user }}</span>
+        <div class="card-header">
+          <span><a href="{% url 'people' post.user.username %}">{{ post.user }}</a></span>
         </div>
         {% if post.image %}
           <img src="{{ post.image.url }}" class="card-img-top" alt="...">

@@ -125,3 +125,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'  # 미디어 파일들이 불릴 URL
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # 실제 저장 장소
+
+
+# authusermodel override하기
+AUTH_USER_MODEL = "accounts.User"
